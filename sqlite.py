@@ -1,72 +1,95 @@
 import sqlite3 as sql
 import os
+import sys
+
+DB_FILE = 'test.db'
 
 
-db_file = 'test.db'
+class SQLiteHandler:
 
+    def __init__(self):
 
-def create_new_db():
-    
-    # Löschen falls vorhanden
-    if os.path.isfile(db_file):
+        if os.path.isfile(DB_FILE):
+            self.connection = sql.connect(DB_FILE)
+        else:
+            self.connection = sql.connect(DB_FILE)
+            self.create_db_schema()
+
+        self.cur = self.connection.cursor()
+
+    def __del__(self):
+        self.connection.close()
+
+    def insert(self, table, dict):
+
+        attributes = ""
+        values = ""
+        for key, value in dict.items():
+            attributes += key+","
+            values += values+","
+
+        attributes = attributes[:-1]
+        values = values[:-1]
+
+        sqlcode = "INSERT INTO {}({}) VALUES {}".format(table, attributes, values)
+
+        self.cur.execute(sqlcode)
+        self.connection.commit()
+
+    def create_db_schema(self):
+
+        # Rezept-Tabelle erstellen
+        self.cur.execute("""
+        DROP Rezept IF EXISTS;
+        CREATE TABLE Rezept (
+        Name            TEXT PRIMARY KEY,
+        Dauer           INTEGER,
+        Gesund          INTEGER,
+        zuletzt         TEXT,
+        zubereitung     TEXT
+        );""")
+
+        # Zutaten Tabelle
+        self.cur.execute("""
+        DROP Zutat IF EXISTS;
+        CREATE TABLE Zutat (
+        Name            TEXT PRIMARY KEY,
+        Kosten          REAL,
+        Eiweiß          INTEGER,
+        Kohlenhydrate   INTEGER,
+        Fett            INTEGER,
+        Saisonstart     TEXT,
+        Saisonende      TEXT,
+        Kategorie       TEXT,
+        );""")
+
+        # Menge Tabelle
+        self.cur.execute("""
+        DROP Enthalten IF EXISTS;
+        CREATE TABLE Enthalten (
+        Zutat           TEXT,
+        Rezept          TEXT,
+        Menge           REAL,
+        PRIMARY KEY(Rezept, Zutat),
+        FOREIGN KEY(Zutat) REFERENCES Zutat(Name),
+        FOREIGN KEY(Rezept) REFERENCES Rezept(Name)
+        );""")
+
+        # Vorrat Tabelle
+        self.cur.execute("""
+        DROP Vorrat if EXISTS;
+        create table Vorrat (
+        ID INTEGER PRIMARY KEY,
+        Zutat TEXT,
+        Ablauf NUMERIC,
+        Menge REAL,
+        FOREIGN KEY(Zutat) REFERENCES Zutat(Name)
+        );""")
+
+        # Änderungen speichern
         try:
-            os.remove(db_file)
+            self.connection.commit()
         except:
-            print('Löschen der alten Datenbank nicht möglich.')
-        
-    # Datenbank öffnen / Erzeugen
-    connection = sql.connect(db_file)
-    
- 
-    # Rezept-Tabelle erstellen
-    connection.execute("""
-    create table Rezept (
-    Name varchar(20) primary key,
-    Dauer int(3),
-    Gesund int(1),
-    zuletzt date,
-    zubereitung CLOB
-    );""")
-    
-    # Zutaten Tabelle
-    connection.execute("""
-    create table Zutat (
-    Name varchar(20) primary key,
-    Kosten float(5),
-    Kalorien int(4),
-    Kategorie enum('Gemuese','Fleisch','Gewuerz')
-    );""")
-    
-    
-    # Menge Tabelle
-    connection.execute("""
-    create table Menge (
-    Zutat varchar(20),
-    Rezept varchar(20),
-    Menge float(4),
-    primary key(Rezept,Zutat)
-    );""")
-    
-    
-    # Vorrat Tabelle
-    connection.execute("""
-    create table Vorrat (
-    ID int(4) primary key,
-    Zutat varchar(20),
-    Ablauf date,
-    Menge float(4),
-    );""")
-  
-    
-    # Änderungen speichern
-    try:
-        connection.commit()
-    except:
-        print('Änderungen konnten nicht gespeichert werden')
-    
-    # Datenbank schließen
-    try:
-        connection.commit()
-    except:
-        print('Schließen der Datenbank nicht möglich')
-    
+            print('create_db_schema(): Änderungen konnten nicht gespeichert werden')
+            sys.exit(-1)
+
