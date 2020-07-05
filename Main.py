@@ -46,19 +46,19 @@ class MainApplication():
         
         tab_parent.pack(expand=1, fill='both')
         
-        self.createTabWochenplan(tab_wochenplan)
-        self.createTabSolo(tab_solo)
-        self.createTabRezept(tab_rezept)
-        self.createTabZutat(tab_zutat)
+        self.create_tab_wochenplan(tab_wochenplan)
+        self.create_tab_solo(tab_solo)
+        self.create_tab_rezept(tab_rezept)
+        self.create_tab_zutat(tab_zutat)
     
     
-    def createTabSolo(self,tab):
+    def create_tab_solo(self, tab):
         pass
     
-    def createTabZutat(self,tab):
+    def create_tab_zutat(self, tab):
         pass
     
-    def createTabWochenplan(self,tab):
+    def create_tab_wochenplan(self, tab):
 
         WOCHENTAGE = ("Montag", "Dienstag", "Mittwoch", "Donnerstag",
                       "Freitag", "Samstag", "Sonntag")
@@ -149,7 +149,7 @@ class MainApplication():
 
         
     
-    def createTabRezept(self,tab):
+    def create_tab_rezept(self, tab):
         
         gerichtliste = ["Sauerbraten", "Hühnerfrikasse", "Mettigel", "Hummer"]
         zutatenliste = ["Apfel", "Kasseler", "Ziebel(n)", "Gewürzgurken"]*8
@@ -185,30 +185,12 @@ class MainApplication():
         # -----------------------
         #    rechte Seite
         # -----------------------
-        
-        listbox = tk.Listbox(frame_right)
-        listbox.grid(row=0, columnspan=3, sticky='nsew')
-        
-        def addToListbox(listbox=listbox):
-            listbox.insert('end', (self.menge.get(), self.einheit.get(), self.zutatToAdd.get()))
 
-        del_button = tk.Button(frame_right, text='Löschen', command=lambda lb=listbox: lb.delete(tk.ANCHOR))
-        del_button.grid(row=1, columnspan=3, sticky='nsew')
-        
-        entry = ttk.Entry(frame_right, textvariable=self.menge)
-        entry.grid(row=2, column=0)
-        
-        opt = tk.OptionMenu(frame_right, self.einheit, *units)
-        # opt.config(width=5, font=('Helvetica', 12))
-        opt.grid(row=2,column=1)
-        
-        opt2 = tk.OptionMenu(frame_right, self.zutatToAdd, *zutatenliste)
-        # opt2.config(width=8, font=('Helvetica', 12))
-        opt2.grid(row=2,column=2)
-        
-        add_button = tk.Button(frame_right, text='Hinzufügen', command=addToListbox)
-        add_button.grid(row=3, columnspan=3, sticky='nsew')
-        
+        zutaten_tf = tk.Text(frame_right, width=30, height=20)
+        zutaten_tf.grid(row=0, column=0)
+
+        zutaten_tf
+
         label1 = ttk.Label(frame, text='Dauer:')
         label1.grid(row=0, column=0, sticky='W')
         
