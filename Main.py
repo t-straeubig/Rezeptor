@@ -25,7 +25,16 @@ class MainApplication():
 
         self.sqlh       = SQLiteHandler()
 
+        self.check_numbers_only = (root.register(self.numbers_only), '%S')
+
         self.configure_gui()
+
+    def numbers_only(self, what):
+        try:
+            float(what)
+            return True
+        except:
+            return False
 
     def configure_gui(self):
 
@@ -35,29 +44,148 @@ class MainApplication():
         tab_parent = ttk.Notebook(root)
         
         tab_wochenplan = ttk.Frame(tab_parent)
-        tab_solo       = ttk.Frame(tab_parent)
+        tab_sql       = ttk.Frame(tab_parent)
         tab_rezept     = ttk.Frame(tab_parent)
         tab_zutat      = ttk.Frame(tab_parent)
         
         tab_parent.add(tab_wochenplan, text="Wochenplan")
-        tab_parent.add(tab_solo,       text="Spontan")
         tab_parent.add(tab_rezept,     text="Rezepte")
         tab_parent.add(tab_zutat,      text="Zutaten")
+        tab_parent.add(tab_sql, text="SQL")
         
         tab_parent.pack(expand=1, fill='both')
         
         self.create_tab_wochenplan(tab_wochenplan)
-        self.create_tab_solo(tab_solo)
+        self.create_tab_sql(tab_sql)
         self.create_tab_rezept(tab_rezept)
         self.create_tab_zutat(tab_zutat)
     
     
-    def create_tab_solo(self, tab):
+    def create_tab_sql(self, tab):
         pass
     
     def create_tab_zutat(self, tab):
-        pass
-    
+
+        zutatenliste = ['Apfel', 'Dörrpflaume', 'Mehl', 'Kneckebrot']
+        kategorien   = ['Fleisch','Fisch','Gemüse','Gewürze']
+        monate = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember']
+
+        # -----------------------
+        #    Struktur frames
+        # -----------------------
+
+        frame_left = tk.Frame(tab)
+        frame_right = tk.Frame(tab)
+
+        frame_left.grid(row=0, column=0, padx=5, pady=5)
+        frame_right.grid(row=0, column=1, padx=5, pady=5)
+
+        # -----------------------
+        #     linke Seite
+        # -----------------------
+
+        label0 = ttk.Label(frame_left, text='Zutat:')
+        label0.grid(row=0, column=0, sticky='W')
+
+        comb0 = ttk.Combobox(frame_left, values=zutatenliste)
+        comb0.grid(row=1, column=0, sticky='nsew')
+
+        label1 = ttk.Label(frame_left, text='Undefinierte Zutaten:')
+        label1.grid(row=2, column=0, sticky='W')
+
+        listbox1 = tk.Listbox(frame_left)
+        listbox1.grid(row=3, columnspan=2, sticky='nsew')
+
+        label2 = ttk.Label(frame_left, text='Überschreiben durch:')
+        label2.grid(row=4, column=0, sticky='W')
+
+        comb3 = ttk.Combobox(frame_left, values=zutatenliste)
+        comb3.grid(row=5, column=0, sticky='nsew')
+
+        # -----------------------
+        #    rechte Seite
+        # -----------------------
+
+        label4 = ttk.Label(frame_right, text='Kategorie:')
+        label4.grid(row=0, column=0, sticky='W')
+
+        comb4 = ttk.Combobox(frame_right, values=kategorien)
+        comb4.grid(row=0, column=1, sticky='nsew')
+
+        frame = tk.Frame(frame_right, relief="sunken",borderwidth = 2)
+        frame.grid(row=1, columnspan=2)
+
+        label5 = ttk.Label(frame, text='Übliche Angabe der Kaufmenge:')
+        label5.grid(row=0, column=0, sticky='W', columnspan=2)
+
+        v = tk.IntVar(frame_right)
+
+        rad1 = ttk.Radiobutton(frame, text="Stück",   variable=v, value=1)
+        rad2 = ttk.Radiobutton(frame, text="Masse",   variable=v, value=2)
+        rad3 = ttk.Radiobutton(frame, text="Volumen", variable=v, value=3)
+
+        rad1.grid(row=1, column=0)
+        rad2.grid(row=1, column=1)
+        rad3.grid(row=1, column=2)
+
+        label51 = ttk.Label(frame, text='g pro Stück /// g pro ml')
+        label51.grid(row=2, column=0, sticky='W', columnspan=2)
+
+        entry6 = tk.Entry(frame, validate='all', validatecommand=self.check_numbers_only)
+        entry6.grid(row=2, column=2, sticky='nsew')
+
+
+        frame0 = tk.Frame(frame_right, relief="sunken", borderwidth=2)
+        frame0.grid(row=2, columnspan=2, pady=5)
+
+        label60 = ttk.Label(frame0, text='Nährstoffe je 100 g:')
+        label60.grid(row=0, column=0, sticky='W', columnspan=2)
+
+        label6 = ttk.Label(frame0, text='Kohlenhydrate:')
+        label6.grid(row=1, column=0, sticky='W')
+
+        entry6 = tk.Entry(frame0, validate='all', validatecommand=self.check_numbers_only)
+        entry6.grid(row=1, column=1, sticky='nsew')
+
+        label7 = ttk.Label(frame0, text='Eiweiß:')
+        label7.grid(row=2, column=0, sticky='W')
+
+        entry7 = tk.Entry(frame0, validate='all', validatecommand=self.check_numbers_only)
+        entry7.grid(row=2, column=1, sticky='nsew')
+
+        label8 = ttk.Label(frame0, text='Fett:')
+        label8.grid(row=3, column=0, sticky='W')
+
+        entry8 = tk.Entry(frame0, validate='all', validatecommand=self.check_numbers_only)
+        entry8.grid(row=3, column=1, sticky='nsew')
+
+        frame1 = tk.Frame(frame_right, relief="sunken", borderwidth=2)
+        frame1.grid(row=3, columnspan=2, pady=5)
+
+        label7 = ttk.Label(frame1, text='Saison')
+        label7.grid(row=0, column=0, sticky='W', columnspan=3)
+
+        label71 = ttk.Label(frame1, text='von')
+        label71.grid(row=1, column=0, sticky='W')
+
+        label72 = ttk.Label(frame1, text='bis')
+        label72.grid(row=2, column=0, sticky='W')
+
+        entry71 = tk.Entry(frame1, validate='all', validatecommand=self.check_numbers_only,width=2)
+        entry71.grid(row=1, column=1)
+
+        entry72 = tk.Entry(frame1, validate='all', validatecommand=self.check_numbers_only,width=2)
+        entry72.grid(row=2, column=1)
+
+        opt71 = tk.OptionMenu(frame1, self.gesund, *monate)
+        opt71.grid(row=1, column=2, sticky='nsew')
+
+        opt72 = tk.OptionMenu(frame1, self.gesund, *monate)
+        opt72.grid(row=2, column=2, sticky='nsew')
+
+
+
+
     def create_tab_wochenplan(self, tab):
 
         WOCHENTAGE = ("Montag", "Dienstag", "Mittwoch", "Donnerstag",
@@ -84,7 +212,8 @@ class MainApplication():
         label0 = ttk.Label(frame_left, text='Anzahl der Tage:')
         label0.grid(row=0, column=0, sticky='W')
         
-        entry = ttk.Entry(frame_left, textvariable=self.max_tage)
+        entry = ttk.Entry(frame_left, textvariable=self.max_tage,
+                          validate='all', validatecommand=self.check_numbers_only)
         entry.grid(row=0, column=1)
         
         listbox = tk.Listbox(frame_left)
@@ -92,7 +221,10 @@ class MainApplication():
         
         def listbox_edit(*_):
             nonlocal listbox
-            n = int(self.max_tage.get())
+            if self.max_tage.get() == '':
+                n = 0
+            else:
+                n = int(self.max_tage.get())
             listbox.delete(0, tk.END)
             for i in range(int(n)):
                 listbox.insert('end', WOCHENTAGE[(heute.weekday()+i) % 7])
@@ -211,6 +343,8 @@ class MainApplication():
 
     def add_zutat(self):
         pass
+
+
 
 if __name__ == '__main__':
     root = tk.Tk()
