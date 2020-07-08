@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import date
 from sqlite import SQLiteHandler
+from utilities import CustomText
+from os import system
 
 class MainApplication():
     
@@ -19,6 +21,7 @@ class MainApplication():
         self.menge      = tk.StringVar()
         self.einheit    = tk.StringVar()
         self.zutatToAdd = tk.StringVar()
+        self.zutaten    = tk.StringVar()
         self.dauer      = tk.StringVar()
         self.personen   = tk.StringVar()
         self.gesund     = tk.StringVar()
@@ -318,10 +321,66 @@ class MainApplication():
         #    rechte Seite
         # -----------------------
 
-        zutaten_tf = tk.Text(frame_right, width=30, height=20)
+        zutaten_tf = CustomText(frame_right, width=30, height=20)
+        zutaten_tf.tag_configure("accepted", foreground="darkgreen")
+        zutaten_tf.tag_configure("critical", foreground="brown")
         zutaten_tf.grid(row=0, column=0)
 
-        zutaten_tf
+        def parse_zutaten(event):
+            print("\n"*50)  # clear screen
+            woerter = {
+                "einheiten": ["Gramm", "Kilogramm", "Priese", "gehäufter Teelöffel"],
+                "zutaten": ["Salz", "Hackfleisch", "Tomate"],
+                "zusatz": ["gestückelt"]
+            }
+            tf = event.widget
+            for tag in tf.tag_names():  # delete previous tags
+                tf.tag_remove(tag, "1.0", "end")
+            line = 1
+            count = tk.IntVar()
+            while True:  # Iterate over Rows
+                tf.mark_set("pointer", "{}.0".format(line))
+
+                # parse number first, because it behaves differently
+                index = tf.search("\d+(\.\d*)?", "pointer", "{}.end".format(line), count=count, regexp=True)
+                if index == "":
+                    print("amount is not set")
+                else:
+                    tf.mark_set("pointer", "{}+{}c".format(index, count.get()))
+                    amount = float(tf.get(index, "pointer"))
+                    print("amount is", str(amount))
+                    tf.tag_add("accepted", index, "pointer")
+
+                for part in woerter.keys():  # Iterate over Unit, Ingredient etc.
+                    while True:  # Search for useful delimiter
+                        comma = tf.search(",", "pointer", "{}.end".format(line))
+                        if comma == "":
+                            comma = "{}.end".format(line)
+                            break
+                        if tf.search("[[:alpha:]]*[[:>:]]", "pointer", comma, count=count, regexp=True) != "":
+                            break
+                        tf.mark_set("pointer", "{}+1c".format(comma))
+
+                    initial = tf.index("pointer")
+                    word = ""
+                    while True:  # Iterate over multiple Words in Ingredient etc.
+                        index = tf.search("[[:alpha:]]+[[:>:]]", "pointer", comma, count=count, regexp=True)
+                        if index == "":  # if no matching words until comma, assume word to be meant
+                            print(part, "is apparently", word)
+                            tf.tag_add("critical", initial, "pointer")
+                            break
+                        tf.mark_set("pointer", "{}+{}c".format(index, count.get()))
+                        word += tf.get(index, "pointer")
+                        if word in woerter[part]:
+                            print(part, "is", word)
+                            tf.tag_add("accepted", initial, "pointer")
+                            break
+                        word += ' '
+                line += 1
+                if tf.index("{}.0".format(line)) == tf.index("end"):
+                    break
+
+        zutaten_tf.bind("<<TextModified>>", parse_zutaten)
 
         label1 = ttk.Label(frame, text='Dauer:')
         label1.grid(row=0, column=0, sticky='W')
