@@ -20,7 +20,8 @@ class MainApplication():
         
         self.menge      = tk.StringVar()
         self.einheit    = tk.StringVar()
-        self.zutatToAdd = tk.StringVar()
+        self.zutat      = tk.StringVar()
+        self.zusatz     = tk.StringVar()
         self.zutaten    = tk.StringVar()
         self.dauer      = tk.StringVar()
         self.personen   = tk.StringVar()
@@ -32,7 +33,8 @@ class MainApplication():
 
         self.configure_gui()
 
-    def numbers_only(self, what):
+    @staticmethod
+    def numbers_only(what):
         try:
             float(what)
             return True
@@ -324,7 +326,7 @@ class MainApplication():
         zutaten_tf = CustomText(frame_right, width=30, height=20)
         zutaten_tf.tag_configure("accepted", foreground="darkgreen")
         zutaten_tf.tag_configure("critical", foreground="brown")
-        zutaten_tf.grid(row=0, column=0)
+        zutaten_tf.grid(row=0, column=0, columnspan=4, sticky="NEWS")
 
         def parse_zutaten(event):
             print("\n"*50)  # clear screen
@@ -381,6 +383,49 @@ class MainApplication():
                     break
 
         zutaten_tf.bind("<<TextModified>>", parse_zutaten)
+
+        def add_zutat():
+            nonlocal zutaten_tf
+
+            if not self.menge.get() or not self.zutat:
+                return
+            if self.einheit.get() == DEFAULT:
+                return
+            if self.zutat.get() == DEFAULT:
+                return
+
+            if zutaten_tf.index("end-1c") != zutaten_tf.index("end-1l"):
+                zutaten_tf.insert("end", "\n")
+            zusatz_text = " , {}".format(self.zusatz.get()) if self.zusatz.get() else ""
+            zutaten_tf.insert("end", "{} {} {}{}".format(self.menge.get(), self.einheit.get(),
+                                                           self.zutat.get(), zusatz_text))
+
+            self.menge.set("")
+            self.einheit.set(DEFAULT)
+            self.zutat.set(DEFAULT)
+            self.zusatz.set("")
+
+        DEFAULT = "Bitte auswählen"
+        DEFAULT_SIZE = len(DEFAULT)
+
+        menge_entry = ttk.Entry(frame_right, width=5, textvariable=self.menge, validate='all', validatecommand=self.check_numbers_only)
+        menge_entry.grid(row=1, column=0)
+
+        einheit_opt = tk.OptionMenu(frame_right, self.einheit, DEFAULT, *units)
+        einheit_opt.config(width=DEFAULT_SIZE)
+        einheit_opt.grid(row=1, column=1)
+        self.einheit.set(DEFAULT)
+
+        zutat_opt = tk.OptionMenu(frame_right, self.zutat, DEFAULT, *zutatenliste)
+        zutat_opt.config(width=DEFAULT_SIZE)
+        zutat_opt.grid(row=1, column=2)
+        self.zutat.set(DEFAULT)
+
+        zusatz_entry = ttk.Entry(frame_right, textvariable=self.zusatz)
+        zusatz_entry.grid(row=1, column=3)
+
+        add_zutat_button = tk.Button(frame_right, text="Hinzufügen", command=add_zutat)
+        add_zutat_button.grid(row=2, column=0, columnspan=4, sticky="WE")
 
         label1 = ttk.Label(frame, text='Dauer:')
         label1.grid(row=0, column=0, sticky='W')
